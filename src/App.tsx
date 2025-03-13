@@ -1,26 +1,57 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import {
+  Navigate,
+  Route,
+  BrowserRouter as Router,
+  Routes,
+} from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import Layout from './components/Layout';
+import { AuthProvider } from './context/AuthContext';
+import AuthState from './data-structures/enum/AuthState';
+import Login from './pages/Login';
+import TrustedDevices from './pages/TrustedDevices';
+import ProtectedRoute from './routes/ProtectedRoute';
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path='/' element={<Layout />}>
+              <Route
+                path='/login'
+                element={
+                  <ProtectedRoute requiredAuthState={AuthState.NOT_SIGNED_IN} />
+                }
+              >
+                <Route index element={<Login />} />
+              </Route>
+
+              <Route
+                element={
+                  <ProtectedRoute requiredAuthState={AuthState.SIGNED_IN} />
+                }
+              >
+                <Route path='/trusted-devices' element={<TrustedDevices />} />
+              </Route>
+
+              <Route
+                index
+                element={<Navigate to='/trusted-devices' replace />}
+              />
+              <Route
+                path={'*'}
+                element={<Navigate to='/trusted-devices' replace />}
+              />
+            </Route>
+          </Routes>
+        </Router>
+      </AuthProvider>
+
+      <ToastContainer position='top-right' autoClose={3000} />
+    </>
   );
-}
+};
 
 export default App;
